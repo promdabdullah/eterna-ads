@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eterna Matchmaking - Google Ads Strategy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral (Stone/Slate/Teal) -->
+    <!-- Application Structure Plan: A single-page vertical dashboard with a sticky top navigation (Objectives, Campaigns, Keywords, Budget, Next Steps). This structure is intuitive for a strategy report, allowing a top-down overview. The "Campaigns" section is the interactive hub, using a JavaScript-powered tabbed interface to let the user explore "Campaign 1: Matchmaking", "Campaign 2: Workshops", and "Campaign 3: Network" individually. This prevents cognitive overload and makes the dense, parallel information easy to digest. The user flow is logical: see the goals, explore the implementation (campaigns & keywords), review the financials (budget chart), and understand the deliverables (next steps). -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Budget Recommendation (Matchmaking: 45-50%, Workshops: 30-35%, Network: 15-25%). Goal: Inform/Compare. Viz/Presentation: Donut Chart. Interaction: Hover to see campaign name and percentage. Justification: Clearest way to show part-to-whole budget allocation instantly. Library: Chart.js (Canvas).
+        - Report Info: 3x parallel campaign structures (Objectives, Ad Groups, Keywords, Ad Copy). Goal: Organize/Inform. Viz/Presentation: Tabbed Interface. Interaction: Click a campaign tab (e.g., "Workshops") to hide the other two and show only the selected campaign's details. Justification: Creates a clean, focused view and prevents overwhelming the user with redundant, parallel information blocks. Library: Vanilla JS + Tailwind.
+        - Report Info: Keyword Lists (Target & Negative). Goal: Inform. Viz/Presentation: Styled HTML lists. Interaction: None (static lists). Justification: Clearly presents target keywords within their relevant campaign tab and isolates the crucial, universal negative keywords in their own section. Library: HTML/Tailwind.
+        - Report Info: Next Steps. Goal: Organize/Inform. Viz/Presentation: Ordered HTML List. Interaction: None. Justification: Clearly and sequentially outlines the required actions. Library: HTML/Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f6;
+            color: #334155;
+        }
+        nav a {
+            transition: color 0.2s ease-in-out;
+        }
+        nav a:hover {
+            color: #0d9488;
+        }
+        .tab-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .tab-btn[data-active="true"] {
+            background-color: #0d9488;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .tab-btn[data-active="false"] {
+            background-color: white;
+            color: #374151;
+        }
+        .keyword-tag {
+            background-color: #f0fdfa;
+            color: #134e4a;
+            border: 1px solid #ccfbf1;
+        }
+        .keyword-tag-negative {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fee2e2;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            margin: 2rem auto;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <nav class="sticky top-0 z-50 w-full bg-white/95 backdrop-blur-sm shadow-md">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <h1 class="text-xl font-bold text-teal-700">Eterna Strategy</h1>
+                <div class="hidden md:flex space-x-6 font-semibold text-slate-600">
+                    <a href="#objectives" class="nav-link">Objectives</a>
+                    <a href="#campaigns" class="nav-link">Campaigns</a>
+                    <a href="#keywords" class="nav-link">Keywords</a>
+                    <a href="#budget" class="nav-link">Budget</a>
+                    <a href="#next-steps" class="nav-link">Next Steps</a>
+                </div>
+                <div class="md:hidden">
+                    <select id="mobile-nav" class="border border-gray-300 rounded-md p-2 text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                        <option value="#objectives">Objectives</option>
+                        <option value="#campaigns">Campaigns</option>
+                        <option value="#keywords">Keywords</option>
+                        <option value="#budget">Budget</option>
+                        <option value="#next-steps">Next Steps</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center my-8 md:my-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-4">Google Ads Strategy</h1>
+            <p class="text-xl text-slate-600">An interactive plan for Eterna Matchmaking</p>
+        </header>
+
+        <section id="objectives" class="pt-20 -mt-16 mb-12 bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6 flex items-center">
+                <span class="text-3xl mr-3">🎯</span>
+                Primary Objectives
+            </h2>
+            <p class="text-slate-600 mb-6">This strategy is built around three core goals to drive high-intent leads, promote valuable programs, and build a dedicated community of faith-centered singles.</p>
+            <ul class="space-y-4">
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 bg-teal-100 text-teal-700 rounded-full font-bold mr-3">1</span>
+                    <span class="text-lg text-slate-700"><strong>Drive Qualified Leads:</strong> Generate consultation bookings from marriage-minded singles seeking covenant-focused matchmaking.</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 bg-teal-100 text-teal-700 rounded-full font-bold mr-3">2</span>
+                    <span class="text-lg text-slate-700"><strong>Promote Programs:</strong> Increase registrations for Eterna’s workshops and preparation programs.</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="flex-shrink-0 flex items-center justify-center w-6 h-6 bg-teal-100 text-teal-700 rounded-full font-bold mr-3">3</span>
+                    <span class="text-lg text-slate-700"><strong>Build Community:</strong> Grow the private Singles Network and build a warm email list for long-term nurturing.</span>
+                </li>
+            </ul>
+        </section>
+
+        <section id="campaigns" class="pt-20 -mt-16 mb-12">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6 flex items-center">
+                <span class="text-3xl mr-3">🚀</span>
+                Campaign Structure (First 30 Days)
+            </h2>
+            <p class="text-slate-600 mb-8">We will launch three distinct Google Search campaigns. This separation allows for precise budget control, focused messaging, and clear performance tracking. Click each tab below to explore the plan for each campaign.</p>
+            
+            <div class="flex flex-wrap gap-2 mb-6">
+                <button class="tab-btn py-3 px-5 font-semibold rounded-md" data-target="content-c1" data-active="true">
+                    Campaign 1: Matchmaking
+                </button>
+                <button class="tab-btn py-3 px-5 font-semibold rounded-md" data-target="content-c2" data-active="false">
+                    Campaign 2: Workshops
+                </button>
+                <button class="tab-btn py-3 px-5 font-semibold rounded-md" data-target="content-c3" data-active="false">
+                    Campaign 3: Network
+                </button>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div id="content-c1" class="tab-content" data-active="true">
+                    <h3 class="text-2xl font-bold text-teal-700 mb-4">Campaign 1: Covenant Matchmaking</h3>
+                    <ul class="list-disc list-inside space-y-3 text-slate-700">
+                        <li><strong>Objective:</strong> Consultation Bookings</li>
+                        <li><strong>Locations:</strong> Toronto & Ontario (Primary)</li>
+                        <li><strong>Landing Page:</strong> Book Consultation Page</li>
+                    </ul>
+
+                    <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Ad Groups</h4>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700 ml-4">
+                        <li>Christian Matchmaker Toronto</li>
+                        <li>Faith-Based Matchmaking</li>
+                        <li>Covenant Marriage Matchmaker</li>
+                    </ul>
+
+                    <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Sample Target Keywords</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="keyword-tag text-sm font-medium px-3 py-1 rounded-full">Christian matchmaker Toronto</span>
+                        <span class="keyword-tag text-sm font-medium px-3 py-1 rounded-full">Faith-based matchmaking</span>
+                        <span class="keyword-tag text-sm font-medium px-3 py-1 rounded-full">Covenant marriage matchmaker</span>
+                    </div>
+
+                    <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Ad Copy Direction</h4>
+                    <blockquote class="border-l-4 border-teal-500 pl-4 italic text-slate-600">
+                        <p class="font-semibold">Headlines:</p>
+                        <ul class="list-disc list-inside ml-4 mb-2">
+                            <li>Covenant-Focused Matchmaking in Toronto</li>
+                            <li>Marriage-Minded Christian Singles Only</li>
+                        </ul>
+                        <p class="font-semibold">Description:</p>
+                        <p>"Eterna helps faith-centred singles find covenant partners."</p>
+                    </blockquote>
+                </div>
+
+                <div id="content-c2" class="tab-content hidden" data-active="false">
+                    <h3 class="text-2xl font-bold text-teal-700 mb-4">Campaign 2: Workshops</h3>
+                    <ul class="list-disc list-inside space-y-3 text-slate-700">
+                        <li><strong>Objective:</strong> Workshop Registrations</li>
+                        <li><strong>Locations:</strong> Ontario, Saskatchewan, Alberta</li>
+                        <li><strong>Landing Page:</strong> Workshop Page</li>
+                    </ul>
+
+                    <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Ad Groups</h4>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700 ml-4">
+                        <li>Christian Relationship Workshop</li>
+                        <li>Attachment Style Workshop</li>
+                        <li>Faith-Based Relationship Coaching</li>
+                    </ul>
+
+                    <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Sample Target Keywords</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="keyword-tag text-sm font-medium px-3 py-1 rounded-full">Christian relationship workshop</span>
+                        <span class="keyword-tag text-sm font-medium px-3 py-1 rounded-full">Christian premarital workshop</span>
+                    </div>
+
+                    <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Ad Copy Direction</h4>
+                    <blockquote class="border-l-4 border-teal-500 pl-4 italic text-slate-600">
+                        <p class="font-semibold">Headline:</p>
+                        <p>"Christian Relationship Workshop – Ontario"</p>
+                        <p class="font-semibold mt-2">Description:</p>
+                        <p>"Identify patterns & build skills needed for covenant marriage."</p>
+                    </blockquote>
+                </div>
+
+                <div id="content-c3" class="tab-content hidden" data-active="false">
+                    <h3 class="text-2xl font-bold text-teal-700 mb-4">Campaign 3: Singles Network</h3>
+                    <ul class="list-disc list-inside space-y-3 text-slate-700">
+                        <li><strong>Objective:</strong> Grow private Singles Network & email list</li>
+                        <li><strong>Locations:</strong> Ontario, Saskatchewan, Alberta</li>
+                        <li><strong>Landing Page:</strong> Join the Network Page</li>
+                    </ul>
+
+                    <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Ad Groups</h4>
+                    <ul class="list-disc list-inside space-y-2 text-slate-700 ml-4">
+                        <li>Christian Singles Network</li>
+                        <li>Marriage-Ready Christian Singles</li>
+                    </ul>
+
+                    <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Sample Target Keywords</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="keyword-tag text-sm font-medium px-3 py-1 rounded-full">Christian singles network Canada</span>
+                    </div>
+
+                    <h4 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Ad Copy Direction</h4>
+                    <blockquote class="border-l-4 border-teal-500 pl-4 italic text-slate-600">
+                        <p class="font-semibold">Headline:</p>
+                        <p>"Join Eterna’s Private Singles Network"</p>
+                    </blockquote>
+                </div>
+            </div>
+        </section>
+
+        <section id="keywords" class="pt-20 -mt-16 mb-12 bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6 flex items-center">
+                <span class="text-3xl mr-3">🔑</span>
+                Keyword Strategy
+            </h2>
+            <p class="text-slate-600 mb-6">Our keyword strategy is designed to maximize relevance and minimize wasted spending. This involves using specific match types to control who sees our ads and a critical list of negative keywords to filter out irrelevant searches.</p>
+            
+            <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Match Type Strategy</h3>
+            <ul class="list-disc list-inside space-y-2 text-slate-700 ml-4">
+                <li><strong>Phase 1 (Launch):</strong> We will use **Phrase Match** and **Exact Match** keywords to focus our budget on users explicitly searching for Eterna's services.</li>
+                <li><strong>Phase 2 (Optimization):</strong> After 30 days, we may test **Broad Match** keywords combined with Smart Bidding to capture a wider, relevant audience.</li>
+            </ul>
+
+            <h3 class="text-xl font-semibold text-slate-800 mt-6 mb-3">Critical Negative Keywords (Filters)</h3>
+            <p class="text-slate-600 mb-4">These terms will be blocked to prevent our ads from showing on irrelevant searches.</p>
+            <div class="flex flex-wrap gap-2">
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">free</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">app</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">dating app</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">tinder</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">bumble</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">hinge</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">reviews</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">jobs</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">senior</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">divorce</span>
+                <span class="keyword-tag-negative text-sm font-medium px-3 py-1 rounded-full">casual dating</span>
+            </div>
+        </section>
+
+        <section id="budget" class="pt-20 -mt-16 mb-12">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6 flex items-center">
+                <span class="text-3xl mr-3">💰</span>
+                Budget Recommendation
+            </h2>
+            <p class="text-slate-600 mb-6">We recommend a starting budget to gather data and optimize. This budget is allocated across the three campaigns to prioritize high-intent leads while simultaneously building our community and workshop audience.</p>
+
+            <div class="text-center bg-teal-600 text-white p-6 rounded-lg shadow-lg max-w-sm mx-auto">
+                <div class="text-sm uppercase tracking-wider mb-1">Suggested Daily Budget</div>
+                <div class="text-4xl font-bold">CAD $40 – $60</div>
+            </div>
+
+            <h3 class="text-2xl font-semibold text-slate-800 mt-10 mb-2 text-center">Budget Allocation</h3>
+            <p class="text-slate-600 mb-4 text-center max-w-xl mx-auto">This chart shows how the budget will be split. Hover over any segment to see the details.</p>
+            <div class="chart-container">
+                <canvas id="budgetChart"></canvas>
+            </div>
+        </section>
+
+        <section id="next-steps" class="pt-20 -mt-16 mb-12 bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6 flex items-center">
+                <span class="text-3xl mr-3">📈</span>
+                Next Steps & Launch Plan
+            </h2>
+            <p class="text-slate-600 mb-6">Here is the implementation plan to get the campaigns live and begin optimization.</p>
+            <ol class="list-decimal list-inside space-y-4 text-lg text-slate-700">
+                <li class="font-semibold">Build Campaigns & Keyword Lists: <span class="font-normal">Finalize the expanded keyword lists and build the campaigns in Google Ads.</span></li>
+                <li class="font-semibold">Prepare Ad Copy Variations: <span class="font-normal">Write multiple headlines and descriptions for A/B testing.</span></li>
+                <li class="font-semibold">Confirm Tracking Setup: <span class="font-normal">Ensure GA4, GTM, and Google Ads are linked and tracking all conversions (bookings, signups).</span></li>
+                <li class="font-semibold">Confirm Launch Schedule: <span class="font-normal">Set a launch date and begin active monitoring and optimization.</span></li>
+                <li class="font-semibold">Reporting Cadence: <span class="font-normal">Provide weekly updates via email and a comprehensive 30-day performance review.</span></li>
+            </ol>
+        </section>
+
+    </main>
+
+    <footer class="text-center p-8 mt-12 border-t border-slate-200">
+        <p class="text-sm text-slate-500">Strategy Draft prepared by Md Abdullah</p>
+    </footer>
+
+    <script type="module">
+        const budgetData = {
+            labels: [
+                'Campaign 1: Matchmaking (45-50%)',
+                'Campaign 2: Workshops (30-35%)',
+                'Campaign 3: Network (15-25%)'
+            ],
+            percentages: [47.5, 32.5, 20], 
+            colors: ['#0d9488', '#0f766e', '#115e59']
+        };
+
+        function formatLabel(str) {
+            if (str.length <= 16) {
+                return str;
+            }
+            return str.substring(0, 16) + '...';
+        }
+
+        const ctx = document.getElementById('budgetChart').getContext('2d');
+        const budgetChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: budgetData.labels,
+                datasets: [{
+                    label: 'Budget Allocation',
+                    data: budgetData.percentages,
+                    backgroundColor: budgetData.colors,
+                    borderColor: '#f8f7f6',
+                    borderWidth: 4,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '60%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: {
+                                size: 12,
+                                family: 'Inter, sans-serif'
+                            },
+                            color: '#334155',
+                            padding: 15,
+                            usePointStyle: true,
+                            boxWidth: 10,
+                            formatter: formatLabel
+                        }
+                    },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#334155',
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold',
+                            family: 'Inter, sans-serif'
+                        },
+                        bodyFont: {
+                            size: 12,
+                            family: 'Inter, sans-serif'
+                        },
+                        padding: 12,
+                        cornerRadius: 4,
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                if (label) {
+                                    label = label.split('(')[0].trim();
+                                }
+                                const value = context.parsed || 0;
+                                return `${label}: ${value}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.dataset.target;
+
+                tabButtons.forEach(btn => btn.dataset.active = 'false');
+                button.dataset.active = 'true';
+
+                tabContents.forEach(content => {
+                    if (content.id === targetId) {
+                        content.classList.remove('hidden');
+                        content.dataset.active = 'true';
+                    } else {
+                        content.classList.add('hidden');
+                        content.dataset.active = 'false';
+                    }
+                });
+            });
+        });
+
+        const navLinks = document.querySelectorAll('nav a.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', e => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        const mobileNav = document.getElementById('mobile-nav');
+        mobileNav.addEventListener('change', e => {
+            const targetId = e.target.value;
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    </script>
+</body>
+</html>
